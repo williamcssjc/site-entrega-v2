@@ -1,15 +1,20 @@
-// tailwind.config.js
-module.exports = {
-  content: ["./src/**/*.{js,jsx,ts,tsx}"],
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,jsx,ts,tsx}",
+  ],
   theme: {
     extend: {
-      backgroundImage: {
-        'wood': "url('/bg-madeira.jpg')", // Caminho para a imagem de fundo
+      colors: {
+        brown: {
+          900: "#4b3621",
+        },
       },
       fontFamily: {
-        serif: ['Playfair Display', 'serif'], // Definindo a fonte Playfair Display
+        serif: ["Playfair Display", "serif"],
       },
     },
   },
   plugins: [],
-}
+};
