@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ComboboxCidades } from "@/components/ui/ComboboxCidades";
 import { db } from "@/lib/firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
-import { Input } from "@/components/ui/input";
+import UploadRomaneio from "@/components/ui/UploadRomaneio";
 
 const lojasComManejo = ["SJC1", "SJC2", "Av. Atibaia", "Fernão Dias", "Estrada de Campos"];
 
@@ -15,7 +16,6 @@ const Vendedor = () => {
   const [lojaSelecionada, setLojaSelecionada] = useState("");
   const [dataSugeridaManejo, setDataSugeridaManejo] = useState("");
   const [dataFinalSelecionada, setDataFinalSelecionada] = useState("");
-  const [mostrarFormularioAgendamento, setMostrarFormularioAgendamento] = useState(false);
 
   const [nomeCliente, setNomeCliente] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
@@ -78,19 +78,28 @@ const Vendedor = () => {
     }
   };
 
+  const preencherFormularioComPDF = (dados) => {
+    if (dados.nomeCliente) setNomeCliente(dados.nomeCliente);
+    if (dados.numeroPedido) setNumeroPedido(dados.numeroPedido);
+    if (dados.endereco) setEndereco(dados.endereco);
+    if (dados.produto) setProduto(dados.produto);
+    if (dados.vendedor) setVendedor(dados.vendedor);
+  };
+
   return (
-    <div className="max-w-xl mx-auto p-6 space-y-4">
-      <h2 className="text-xl font-bold mb-4">Consulta de Datas</h2>
+    <div className="max-w-xl mx-auto p-6 space-y-6">
+      <h2 className="text-2xl font-bold mb-4">Agendamento de Entrega</h2>
 
-      <ComboboxCidades onChange={(cidade) => setCidadeSelecionada(cidade)} />
-
-      <Button onClick={buscarDatas} className="mt-2">Buscar Datas</Button>
+      <div className="space-y-4">
+        <ComboboxCidades value={cidadeSelecionada} onChange={setCidadeSelecionada} />
+        <Button onClick={buscarDatas} className="w-full">Buscar Datas</Button>
+      </div>
 
       {buscou && (
-        <div className="space-y-4 mt-4">
-          <div>
-            <h3 className="font-semibold">Sugestões de datas de entrega:</h3>
-            <ul className="list-disc ml-4">
+        <>
+          <div className="mt-6">
+            <h3 className="font-semibold mb-2">Sugestões de datas:</h3>
+            <ul className="list-disc list-inside">
               {datasSugestao.map((data, idx) => (
                 <li key={idx}>{data}</li>
               ))}
@@ -98,60 +107,61 @@ const Vendedor = () => {
           </div>
 
           {manejoNecessario === null && (
-            <div>
-              <p className="mt-2">Essa entrega precisa de manejo?</p>
-              <div className="flex gap-4 mt-2">
-                <Button onClick={() => setManejoNecessario(true)}>Sim</Button>
-                <Button onClick={() => setManejoNecessario(false)}>Não</Button>
-              </div>
+            <div className="mt-4 flex gap-4">
+              <Button onClick={() => setManejoNecessario(true)}>Precisa de manejo</Button>
+              <Button variant="outline" onClick={() => setManejoNecessario(false)}>Não precisa</Button>
             </div>
           )}
-        </div>
-      )}
 
-      {manejoNecessario === false && (
-        <div className="mt-4 space-y-2">
-          <p>Escolher data final para entrega</p>
-          <select value={dataFinalSelecionada} onChange={(e) => setDataFinalSelecionada(e.target.value)} className="border rounded px-2 py-1">
-            <option value="">Selecione uma data</option>
-            {datasSugestao.map((data, idx) => (
-              <option key={idx} value={data}>{data}</option>
-            ))}
-          </select>
-        </div>
-      )}
+          {manejoNecessario !== null && (
+            <>
+              {manejoNecessario && (
+                <div className="space-y-4 mt-4">
+                  <p>Selecione a loja de manejo:</p>
+                  <select value={lojaSelecionada} onChange={(e) => {
+                    setLojaSelecionada(e.target.value);
+                    sugerirManejo(e.target.value);
+                  }} className="border rounded px-2 py-2 w-full">
+                    <option value="">Escolher loja</option>
+                    {lojasComManejo.map((loja) => (
+                      <option key={loja} value={loja}>{loja}</option>
+                    ))}
+                  </select>
 
-      {manejoNecessario === true && (
-        <div className="mt-4 space-y-4">
-          <p>De qual loja sairá o manejo?</p>
-          <select value={lojaSelecionada} onChange={(e) => {
-            setLojaSelecionada(e.target.value);
-            sugerirManejo(e.target.value);
-          }} className="border rounded px-2 py-1">
-            <option value="">Selecione a loja</option>
-            {lojasComManejo.map((loja) => (
-              <option key={loja} value={loja}>{loja}</option>
-            ))}
-          </select>
+                  {dataSugeridaManejo && (
+                    <>
+                      <p>Data sugerida para manejo: <strong>{dataSugeridaManejo}</strong></p>
+                      <p>Selecione a data de entrega:</p>
+                      <select value={dataFinalSelecionada} onChange={(e) => setDataFinalSelecionada(e.target.value)} className="border rounded px-2 py-2 w-full">
+                        <option value="">Escolher data</option>
+                        {gerarDatasEntrega(new Date(dataSugeridaManejo), 3).map((data, idx) => (
+                          <option key={idx} value={data}>{data}</option>
+                        ))}
+                      </select>
+                    </>
+                  )}
+                </div>
+              )}
 
-          {dataSugeridaManejo && (
-            <div>
-              <p>Data sugerida para o manejo: <strong>{dataSugeridaManejo}</strong></p>
-              <p className="mt-2">Datas sugeridas para entrega após manejo:</p>
-              <select value={dataFinalSelecionada} onChange={(e) => setDataFinalSelecionada(e.target.value)} className="border rounded px-2 py-1">
-                <option value="">Selecione a data final</option>
-                {gerarDatasEntrega(new Date(dataSugeridaManejo), 3).map((data, idx) => (
-                  <option key={idx} value={data}>{data}</option>
-                ))}
-              </select>
-            </div>
+              {!manejoNecessario && (
+                <div className="space-y-4 mt-4">
+                  <p>Escolha a data de entrega:</p>
+                  <select value={dataFinalSelecionada} onChange={(e) => setDataFinalSelecionada(e.target.value)} className="border rounded px-2 py-2 w-full">
+                    <option value="">Escolher data</option>
+                    {datasSugestao.map((data, idx) => (
+                      <option key={idx} value={data}>{data}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </>
           )}
-        </div>
+        </>
       )}
 
       {dataFinalSelecionada && (
         <div className="space-y-4 mt-6">
-          <h4 className="font-medium">Preencha os dados da entrega:</h4>
+          <UploadRomaneio onDadosExtraidos={preencherFormularioComPDF} />
 
           <Input placeholder="Nome do cliente" value={nomeCliente} onChange={(e) => setNomeCliente(e.target.value)} />
           <Input placeholder="Número do pedido" value={numeroPedido} onChange={(e) => setNumeroPedido(e.target.value)} />
@@ -160,8 +170,8 @@ const Vendedor = () => {
           <Input placeholder="Nome do vendedor" value={vendedor} onChange={(e) => setVendedor(e.target.value)} />
           <Input placeholder="Observações (opcional)" value={observacoes} onChange={(e) => setObservacoes(e.target.value)} />
 
-          <Button className="mt-2" onClick={handleAgendarEntrega}>
-            Agendar entrega
+          <Button onClick={handleAgendarEntrega} className="w-full">
+            Agendar Entrega
           </Button>
         </div>
       )}

@@ -1,11 +1,7 @@
-/* src/index.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-gradient-to-br from-bege to-claro text-escuro font-sans;
-}
 
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;

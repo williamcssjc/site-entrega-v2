@@ -1,37 +1,15 @@
-/** @type {import('tailwindcss').Config} */
+// tailwind.config.js
 module.exports = {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
-      colors: {
-        madeira: "#A67C52",
-        bege: "#F5F5DC",
-        escuro: "#1E1E1E",
-        claro: "#FAFAFA",
-        vinho: "#8B0000",
-        brand: "#A67C52",
-        "brand-dark": "#845C3B",
-        "brand-light": "#E9DCCF",
+      backgroundImage: {
+        'wood': "url('/bg-madeira.jpg')", // Caminho para a imagem de fundo
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
+        serif: ['Playfair Display', 'serif'], // Definindo a fonte Playfair Display
       },
     },
   },
   plugins: [],
 }
-// tailwind.config.js
-export default {
-  theme: {
-    extend: {
-      colors: {
-        madeira: "#8B5E3C",  // cor personalizada
-        bege: "#f5f5dc",     // se quiser usar o bg-bege
-      },
-    },
-  },
-  plugins: [],
-};
