@@ -5,8 +5,28 @@ import { ComboboxCidades } from "@/components/ui/ComboboxCidades";
 import { db } from "@/lib/firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
 import UploadRomaneio from "@/components/ui/UploadRomaneio";
+import { toast } from "sonner";
 
 const lojasComManejo = ["SJC1", "SJC2", "Av. Atibaia", "Fernão Dias", "Estrada de Campos"];
+
+const SelectDataEntrega = ({ datas, value, onChange }) => (
+  <select value={value} onChange={(e) => onChange(e.target.value)} className="border rounded px-2 py-2 w-full">
+    <option value="">Escolher data</option>
+    {datas.map((data, idx) => (
+      <option key={idx} value={data}>{data}</option>
+    ))}
+  </select>
+);
+
+const gerarDatasEntrega = (inicio = new Date(), quantidade = 3) => {
+  const datas = [];
+  const data = new Date(inicio);
+  for (let i = 0; i < quantidade; i++) {
+    data.setDate(data.getDate() + 1);
+    datas.push(data.toISOString().slice(0, 10));
+  }
+  return datas;
+};
 
 const Vendedor = () => {
   const [cidadeSelecionada, setCidadeSelecionada] = useState("");
@@ -24,20 +44,12 @@ const Vendedor = () => {
   const [vendedor, setVendedor] = useState("");
   const [observacoes, setObservacoes] = useState("");
 
-  const gerarDatasEntrega = (inicio = new Date(), quantidade = 3) => {
-    const datas = [];
-    let data = new Date(inicio);
-    for (let i = 0; i < quantidade; i++) {
-      data.setDate(data.getDate() + 1);
-      datas.push(data.toISOString().slice(0, 10));
-    }
-    return datas;
-  };
-
   const buscarDatas = () => {
-    if (!cidadeSelecionada) return;
-    const hoje = new Date();
-    const sugestoes = gerarDatasEntrega(hoje, 3);
+    if (!cidadeSelecionada) {
+      toast.warning("Selecione uma cidade antes de buscar datas.");
+      return;
+    }
+    const sugestoes = gerarDatasEntrega(new Date(), 3);
     setDatasSugestao(sugestoes);
     setBuscou(true);
     setManejoNecessario(null);
@@ -45,14 +57,13 @@ const Vendedor = () => {
   };
 
   const sugerirManejo = (loja) => {
-    const hoje = new Date();
-    const diaManejo = gerarDatasEntrega(hoje, 1)[0];
+    const diaManejo = gerarDatasEntrega(new Date(), 1)[0];
     setDataSugeridaManejo(diaManejo);
   };
 
   const handleAgendarEntrega = async () => {
     if (!numeroPedido || !nomeCliente || !endereco || !produto || !vendedor || !dataFinalSelecionada) {
-      alert("Preencha todos os campos obrigatórios.");
+      toast.warning("Preencha todos os campos obrigatórios.");
       return;
     }
 
@@ -71,10 +82,10 @@ const Vendedor = () => {
 
     try {
       await setDoc(doc(db, "entregas", numeroPedido), dadosEntrega);
-      alert("Entrega agendada com sucesso!");
+      toast.success("Entrega agendada com sucesso!");
     } catch (err) {
       console.error("Erro ao agendar entrega:", err);
-      alert("Erro ao agendar. Tente novamente.");
+      toast.error("Erro ao agendar. Tente novamente.");
     }
   };
 
@@ -118,10 +129,14 @@ const Vendedor = () => {
               {manejoNecessario && (
                 <div className="space-y-4 mt-4">
                   <p>Selecione a loja de manejo:</p>
-                  <select value={lojaSelecionada} onChange={(e) => {
-                    setLojaSelecionada(e.target.value);
-                    sugerirManejo(e.target.value);
-                  }} className="border rounded px-2 py-2 w-full">
+                  <select
+                    value={lojaSelecionada}
+                    onChange={(e) => {
+                      setLojaSelecionada(e.target.value);
+                      sugerirManejo(e.target.value);
+                    }}
+                    className="border rounded px-2 py-2 w-full"
+                  >
                     <option value="">Escolher loja</option>
                     {lojasComManejo.map((loja) => (
                       <option key={loja} value={loja}>{loja}</option>
@@ -132,12 +147,11 @@ const Vendedor = () => {
                     <>
                       <p>Data sugerida para manejo: <strong>{dataSugeridaManejo}</strong></p>
                       <p>Selecione a data de entrega:</p>
-                      <select value={dataFinalSelecionada} onChange={(e) => setDataFinalSelecionada(e.target.value)} className="border rounded px-2 py-2 w-full">
-                        <option value="">Escolher data</option>
-                        {gerarDatasEntrega(new Date(dataSugeridaManejo), 3).map((data, idx) => (
-                          <option key={idx} value={data}>{data}</option>
-                        ))}
-                      </select>
+                      <SelectDataEntrega
+                        datas={gerarDatasEntrega(new Date(dataSugeridaManejo), 3)}
+                        value={dataFinalSelecionada}
+                        onChange={setDataFinalSelecionada}
+                      />
                     </>
                   )}
                 </div>
@@ -146,12 +160,11 @@ const Vendedor = () => {
               {!manejoNecessario && (
                 <div className="space-y-4 mt-4">
                   <p>Escolha a data de entrega:</p>
-                  <select value={dataFinalSelecionada} onChange={(e) => setDataFinalSelecionada(e.target.value)} className="border rounded px-2 py-2 w-full">
-                    <option value="">Escolher data</option>
-                    {datasSugestao.map((data, idx) => (
-                      <option key={idx} value={data}>{data}</option>
-                    ))}
-                  </select>
+                  <SelectDataEntrega
+                    datas={datasSugestao}
+                    value={dataFinalSelecionada}
+                    onChange={setDataFinalSelecionada}
+                  />
                 </div>
               )}
             </>
@@ -160,9 +173,8 @@ const Vendedor = () => {
       )}
 
       {dataFinalSelecionada && (
-        <div className="space-y-4 mt-6">
+        <form onSubmit={(e) => { e.preventDefault(); handleAgendarEntrega(); }} className="space-y-4 mt-6">
           <UploadRomaneio onDadosExtraidos={preencherFormularioComPDF} />
-
           <Input placeholder="Nome do cliente" value={nomeCliente} onChange={(e) => setNomeCliente(e.target.value)} />
           <Input placeholder="Número do pedido" value={numeroPedido} onChange={(e) => setNumeroPedido(e.target.value)} />
           <Input placeholder="Endereço completo" value={endereco} onChange={(e) => setEndereco(e.target.value)} />
@@ -170,10 +182,8 @@ const Vendedor = () => {
           <Input placeholder="Nome do vendedor" value={vendedor} onChange={(e) => setVendedor(e.target.value)} />
           <Input placeholder="Observações (opcional)" value={observacoes} onChange={(e) => setObservacoes(e.target.value)} />
 
-          <Button onClick={handleAgendarEntrega} className="w-full">
-            Agendar Entrega
-          </Button>
-        </div>
+          <Button type="submit" className="w-full">Agendar Entrega</Button>
+        </form>
       )}
     </div>
   );

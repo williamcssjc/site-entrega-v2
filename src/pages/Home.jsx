@@ -1,16 +1,21 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardTitle, CardContent } from "@/components/ui/card";
-
+import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[url('/background-madeira.jpg')] bg-cover bg-center flex flex-col items-center justify-center px-4 py-12 text-[#4b3621]">
+    <div
+      className="min-h-screen flex flex-col items-center justify-center"
+      style={{
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
       <img
-        src="/artelogo.png"
         alt="Arte Velha Logo"
         className="w-48 h-auto mb-8 drop-shadow"
       />

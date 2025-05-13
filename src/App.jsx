@@ -5,6 +5,7 @@ import Cliente from "./pages/Cliente";
 import Vendedor from "./pages/Vendedor";
 import Logistica from "./pages/Logistica";
 import NotFound from "./pages/NotFound";
+import 'leaflet/dist/leaflet.css';
 
 export default function App() {
   return (
