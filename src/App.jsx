@@ -1,26 +1,24 @@
-import { Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
-import Cliente from "./pages/Cliente";
 import Vendedor from "./pages/Vendedor";
 import Logistica from "./pages/Logistica";
+import Cliente from "./pages/Cliente";
 import NotFound from "./pages/NotFound";
-import 'leaflet/dist/leaflet.css';
-import { Toaster } from "sonner";
+import Entregador from './pages/Entregador'
 
-export default function App() {
+function App() {
   return (
-    <>
-      <Toaster position="top-center" />
+    <Router>
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Home />} />
-          <Route path="cliente" element={<Cliente />} />
-          <Route path="vendedor" element={<Vendedor />} />
-          <Route path="logistica" element={<Logistica />} />
-          <Route path="*" element={<NotFound />} />
-        </Route>
+        <Route path="/" element={<Home />} />
+        <Route path="/vendedor" element={<Vendedor />} />
+        <Route path="/logistica" element={<Logistica />} />
+        <Route path="/cliente" element={<Cliente />} />
+        <Route path="/entregador" element={<Entregador />} /> {/* ✅ Nova rota */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
-    </>
+    </Router>
   );
 }
+
+export default App;

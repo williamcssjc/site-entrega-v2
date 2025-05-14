@@ -1,40 +1,31 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button"; // ShadCN
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function Home() {
-  const navigate = useNavigate();
-
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center"
-      style={{
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
-    >
-      <img
-        alt="Arte Velha Logo"
-        className="w-48 h-auto mb-8 drop-shadow"
-      />
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
-        {["Cliente", "Vendedor", "Logística"].map((papel) => (
-          <Card key={papel} className="bg-white/90 backdrop-blur-md shadow-lg">
-            <CardContent className="p-6 flex flex-col items-center">
-              <h2 className="text-2xl mb-4 font-semibold">{papel}</h2>
-              <Button
-                className="bg-yellow-800 hover:bg-yellow-700 text-white w-full"
-                onClick={() => navigate(`/${papel.toLowerCase()}`)}
-              >
-                Acessar {papel}
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-center text-2xl font-bold">
+            Escolha seu perfil
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button asChild className="w-full">
+            <Link to="/cliente">Cliente</Link>
+          </Button>
+          <Button asChild className="w-full">
+            <Link to="/vendedor">Vendedor</Link>
+          </Button>
+          <Button asChild className="w-full">
+            <Link to="/logistica">Logística</Link>
+          </Button>
+          <Button asChild className="w-full">
+            <Link to="/entregador">Entregador</Link> {/* ✅ Novo botão */}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
