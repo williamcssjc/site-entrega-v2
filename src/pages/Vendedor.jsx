@@ -36,6 +36,7 @@ const Vendedor = () => {
   const [lojaSelecionada, setLojaSelecionada] = useState("");
   const [dataSugeridaManejo, setDataSugeridaManejo] = useState("");
   const [dataFinalSelecionada, setDataFinalSelecionada] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const [nomeCliente, setNomeCliente] = useState("");
   const [numeroPedido, setNumeroPedido] = useState("");
@@ -43,6 +44,8 @@ const Vendedor = () => {
   const [produto, setProduto] = useState("");
   const [vendedor, setVendedor] = useState("");
   const [observacoes, setObservacoes] = useState("");
+
+  const [agendamentoFeito, setAgendamentoFeito] = useState(false);
 
   const buscarDatas = () => {
     if (!cidadeSelecionada) {
@@ -59,6 +62,23 @@ const Vendedor = () => {
   const sugerirManejo = (loja) => {
     const diaManejo = gerarDatasEntrega(new Date(), 1)[0];
     setDataSugeridaManejo(diaManejo);
+  };
+
+  const limparCampos = () => {
+    setCidadeSelecionada("");
+    setDatasSugestao([]);
+    setBuscou(false);
+    setManejoNecessario(null);
+    setLojaSelecionada("");
+    setDataSugeridaManejo("");
+    setDataFinalSelecionada("");
+    setNomeCliente("");
+    setNumeroPedido("");
+    setEndereco("");
+    setProduto("");
+    setVendedor("");
+    setObservacoes("");
+    setAgendamentoFeito(false);
   };
 
   const handleAgendarEntrega = async () => {
@@ -80,12 +100,17 @@ const Vendedor = () => {
       vendedor,
     };
 
+    setIsLoading(true);
+
     try {
       await setDoc(doc(db, "entregas", numeroPedido), dadosEntrega);
-      toast.success("Entrega agendada com sucesso!");
+      toast.success("✅ Pedido agendado com sucesso!");
+      setAgendamentoFeito(true);
     } catch (err) {
       console.error("Erro ao agendar entrega:", err);
-      toast.error("Erro ao agendar. Tente novamente.");
+      toast.error("❌ Erro ao agendar. Tente novamente.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -96,6 +121,16 @@ const Vendedor = () => {
     if (dados.produto) setProduto(dados.produto);
     if (dados.vendedor) setVendedor(dados.vendedor);
   };
+
+  if (agendamentoFeito) {
+    return (
+      <div className="max-w-xl mx-auto p-6 text-center space-y-6">
+        <h2 className="text-2xl font-bold text-green-600">✅ Pedido agendado com sucesso!</h2>
+        <p className="text-gray-700">Você pode agendar outro pedido clicando abaixo:</p>
+        <Button onClick={limparCampos}>Agendar outro pedido</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto p-6 space-y-6">
@@ -182,7 +217,32 @@ const Vendedor = () => {
           <Input placeholder="Nome do vendedor" value={vendedor} onChange={(e) => setVendedor(e.target.value)} />
           <Input placeholder="Observações (opcional)" value={observacoes} onChange={(e) => setObservacoes(e.target.value)} />
 
-          <Button type="submit" className="w-full">Agendar Entrega</Button>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+  {isLoading && (
+    <svg
+      className="animate-spin mr-2 h-4 w-4 text-white"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      ></circle>
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+      ></path>
+    </svg>
+  )}
+  {isLoading ? "Agendando..." : "Agendar Entrega"}
+</Button>
+
         </form>
       )}
     </div>
