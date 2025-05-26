@@ -67,3 +67,9 @@ Interface com três perfis:
 ```bash
 npm install
 npm run dev
+
+O projeto pode ser facilmente evoluído para mobile com responsividade.
+
+O ideal é que os vendedores sempre usem o romaneio PDF gerado após a venda para preencher os dados corretamente.
+
+Todos os campos no Firestore foram planejados para permitir futuras análises e filtros por status, cidade, equipe ou data.
